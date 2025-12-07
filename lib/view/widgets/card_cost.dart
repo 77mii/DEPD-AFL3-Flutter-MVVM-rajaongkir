@@ -3,7 +3,8 @@ part of 'widgets.dart';
 // Widget untuk menampilkan informasi biaya pengiriman dalam bentuk card
 class CardCost extends StatefulWidget {
   final Costs cost;
-  const CardCost(this.cost, {super.key});
+  final VoidCallback? onTap;
+  const CardCost(this.cost, {super.key, this.onTap});
 
   @override
   State<CardCost> createState() => _CardCostState();
@@ -11,11 +12,15 @@ class CardCost extends StatefulWidget {
 
 class _CardCostState extends State<CardCost> {
   // Memformat angka menjadi mata uang Rupiah
-  String rupiahMoneyFormatter(int? value) {
-    if (value == null) return "Rp0,00";
+  String currencyFormatter(num? value, String? currency) {
+    String symbol = (currency?.toUpperCase() == 'IDR' || currency == null)
+        ? 'Rp'
+        : currency;
+
+    if (value == null) return "${symbol}0,00";
     final formatter = NumberFormat.currency(
       locale: 'id_ID',
-      symbol: 'Rp',
+      symbol: symbol,
       decimalDigits: 2,
     );
     return formatter.format(value);
@@ -42,6 +47,7 @@ class _CardCostState extends State<CardCost> {
       ),
       color: Colors.white,
       child: ListTile(
+        onTap: widget.onTap,
         title: Text(
           style: TextStyle(
             color: Colors.blue[800],
@@ -57,7 +63,7 @@ class _CardCostState extends State<CardCost> {
                 color: Colors.black,
                 fontWeight: FontWeight.w500,
               ),
-              "Biaya: ${rupiahMoneyFormatter(cost.cost)}",
+              "Biaya: ${currencyFormatter(cost.cost, cost.currency)}",
             ),
             const SizedBox(height: 4),
             Text(

@@ -88,6 +88,62 @@ class HomeViewModel with ChangeNotifier {
         });
   }
 
+  // Cache kecamatan per id kota
+  final Map<int, List<District>> _districtCache = {};
+
+  // State daftar kecamatan asal
+  ApiResponse<List<District>> districtOriginList = ApiResponse.notStarted();
+  setDistrictOriginList(ApiResponse<List<District>> response) {
+    districtOriginList = response;
+    notifyListeners();
+  }
+
+  // Ambil kecamatan asal
+  Future getDistrictOriginList(int cityId) async {
+    if (_districtCache.containsKey(cityId)) {
+      setDistrictOriginList(ApiResponse.completed(_districtCache[cityId]!));
+      return;
+    }
+    setDistrictOriginList(ApiResponse.loading());
+    _homeRepo
+        .fetchDistrictList(cityId)
+        .then((value) {
+          _districtCache[cityId] = value;
+          setDistrictOriginList(ApiResponse.completed(value));
+        })
+        .onError((error, _) {
+          setDistrictOriginList(ApiResponse.error(error.toString()));
+        });
+  }
+
+  // State daftar kecamatan tujuan
+  ApiResponse<List<District>> districtDestinationList =
+      ApiResponse.notStarted();
+  setDistrictDestinationList(ApiResponse<List<District>> response) {
+    districtDestinationList = response;
+    notifyListeners();
+  }
+
+  // Ambil kecamatan tujuan
+  Future getDistrictDestinationList(int cityId) async {
+    if (_districtCache.containsKey(cityId)) {
+      setDistrictDestinationList(
+        ApiResponse.completed(_districtCache[cityId]!),
+      );
+      return;
+    }
+    setDistrictDestinationList(ApiResponse.loading());
+    _homeRepo
+        .fetchDistrictList(cityId)
+        .then((value) {
+          _districtCache[cityId] = value;
+          setDistrictDestinationList(ApiResponse.completed(value));
+        })
+        .onError((error, _) {
+          setDistrictDestinationList(ApiResponse.error(error.toString()));
+        });
+  }
+
   // State daftar biaya ongkir
   ApiResponse<List<Costs>> costList = ApiResponse.notStarted();
   setCostList(ApiResponse<List<Costs>> response) {

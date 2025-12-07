@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:depd_mvvm_2025/shared/style.dart';
 import 'package:depd_mvvm_2025/view/pages/pages.dart';
 import 'package:depd_mvvm_2025/viewmodel/home_viewmodel.dart';
+import 'package:depd_mvvm_2025/viewmodel/international_viewmodel.dart';
+import 'package:depd_mvvm_2025/viewmodel/tracking_viewmodel.dart';
 
 Future<void> main() async {
   // Memastikan binding Flutter sudah diinisialisasi sebelum menjalankan aplikasi
@@ -19,17 +22,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => HomeViewModel(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HomeViewModel()),
+        ChangeNotifierProvider(create: (_) => InternationalViewModel()),
+        ChangeNotifierProvider(create: (_) => TrackingViewModel()),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter x RajaOngkir API',
         theme: ThemeData(
           primaryColor: Style.blue800,
           scaffoldBackgroundColor: Style.grey50,
-          textTheme: Theme.of(
-            context,
-          ).textTheme.apply(bodyColor: Style.black, displayColor: Style.black),
+          textTheme: GoogleFonts.openSansTextTheme(
+            Theme.of(context).textTheme,
+          ).apply(bodyColor: Style.black, displayColor: Style.black),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all<Color>(Style.blue800),
@@ -56,8 +63,7 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        initialRoute: '/',
-        routes: {'/': (context) => const HomePage()},
+        home: const MainMenuPage(),
       ),
     );
   }

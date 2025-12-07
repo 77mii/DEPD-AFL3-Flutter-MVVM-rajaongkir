@@ -21,8 +21,10 @@ class _HomePageState extends State<HomePage> {
   // ID provinsi dan kota untuk lokasi asal dan tujuan
   int? selectedProvinceOriginId;
   int? selectedCityOriginId;
+  int? selectedDistrictOriginId;
   int? selectedProvinceDestinationId;
   int? selectedCityDestinationId;
+  int? selectedDistrictDestinationId;
 
   // Menimpa method bawaan State
   @override
@@ -42,6 +44,14 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     weightController.dispose();
     super.dispose();
+  }
+
+  void _showCostDetail(BuildContext context, Costs cost) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CostDetailBottomSheet(cost: cost),
+    );
   }
 
   @override
@@ -137,7 +147,8 @@ class _HomePageState extends State<HomePage> {
 
                                   return DropdownButton<int>(
                                     isExpanded: true,
-                                    value: selectedProvinceOriginId, // Masih null saat awal
+                                    value:
+                                        selectedProvinceOriginId, // Masih null saat awal
                                     hint: const Text('Pilih provinsi'),
                                     items: provinces
                                         .map(
@@ -147,7 +158,8 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         )
                                         .toList(),
-                                    onChanged: (newId) { // Ketika user memilih provinsi baru, misalnya ID 1
+                                    onChanged: (newId) {
+                                      // Ketika user memilih provinsi baru, misalnya ID 1
                                       setState(() {
                                         selectedProvinceOriginId = newId;
                                         selectedCityOriginId =
@@ -155,9 +167,7 @@ class _HomePageState extends State<HomePage> {
                                       });
                                       // Jika ada ID provinsi yang dipilih, load daftar kota untuk provinsi tersebut
                                       if (newId != null) {
-                                        vm.getCityOriginList(
-                                          newId,
-                                        );
+                                        vm.getCityOriginList(newId);
                                       }
                                     },
                                   );
@@ -240,7 +250,11 @@ class _HomePageState extends State<HomePage> {
                                       onChanged: (newId) {
                                         setState(() {
                                           selectedCityOriginId = newId;
+                                          selectedDistrictOriginId = null;
                                         });
+                                        if (newId != null) {
+                                          vm.getDistrictOriginList(newId);
+                                        }
                                       },
                                     );
                                   }
@@ -252,7 +266,75 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 16),
+                        // Dropdown kecamatan asal
+                        Consumer<HomeViewModel>(
+                          builder: (context, vm, _) {
+                            if (selectedCityOriginId == null ||
+                                vm.districtOriginList.status ==
+                                    Status.notStarted) {
+                              return DropdownButton<int>(
+                                isExpanded: true,
+                                hint: const Text('Pilih kecamatan'),
+                                items: const [],
+                                onChanged: null,
+                              );
+                            }
+                            if (vm.districtOriginList.status ==
+                                Status.loading) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                ),
+                              );
+                            }
+                            if (vm.districtOriginList.status == Status.error) {
+                              return Text(
+                                vm.districtOriginList.message ?? 'Error',
+                                style: const TextStyle(color: Colors.red),
+                              );
+                            }
+                            if (vm.districtOriginList.status ==
+                                Status.completed) {
+                              final districts =
+                                  vm.districtOriginList.data ?? [];
+                              if (districts.isEmpty) {
+                                return const Text('Tidak ada kecamatan');
+                              }
+
+                              final validIds = districts
+                                  .map((d) => d.id)
+                                  .toSet();
+                              final validValue =
+                                  validIds.contains(selectedDistrictOriginId)
+                                  ? selectedDistrictOriginId
+                                  : null;
+
+                              return DropdownButton<int>(
+                                isExpanded: true,
+                                value: validValue,
+                                hint: const Text('Pilih kecamatan'),
+                                items: districts
+                                    .map(
+                                      (d) => DropdownMenuItem<int>(
+                                        value: d.id,
+                                        child: Text(d.name ?? ''),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (newId) {
+                                  setState(() {
+                                    selectedDistrictOriginId = newId;
+                                  });
+                                },
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
                         const SizedBox(height: 24),
+                        const Divider(thickness: 2),
+                        const SizedBox(height: 12),
                         // Section Destination (Tujuan pengiriman)
                         const Align(
                           alignment: Alignment.centerLeft,
@@ -401,7 +483,11 @@ class _HomePageState extends State<HomePage> {
                                       onChanged: (newId) {
                                         setState(() {
                                           selectedCityDestinationId = newId;
+                                          selectedDistrictDestinationId = null;
                                         });
+                                        if (newId != null) {
+                                          vm.getDistrictDestinationList(newId);
+                                        }
                                       },
                                     );
                                   }
@@ -411,6 +497,75 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 16),
+                        // Dropdown kecamatan tujuan
+                        Consumer<HomeViewModel>(
+                          builder: (context, vm, _) {
+                            if (selectedCityDestinationId == null ||
+                                vm.districtDestinationList.status ==
+                                    Status.notStarted) {
+                              return DropdownButton<int>(
+                                isExpanded: true,
+                                hint: const Text('Pilih kecamatan'),
+                                items: const [],
+                                onChanged: null,
+                              );
+                            }
+                            if (vm.districtDestinationList.status ==
+                                Status.loading) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                ),
+                              );
+                            }
+                            if (vm.districtDestinationList.status ==
+                                Status.error) {
+                              return Text(
+                                vm.districtDestinationList.message ?? 'Error',
+                                style: const TextStyle(color: Colors.red),
+                              );
+                            }
+                            if (vm.districtDestinationList.status ==
+                                Status.completed) {
+                              final districts =
+                                  vm.districtDestinationList.data ?? [];
+                              if (districts.isEmpty) {
+                                return const Text('Tidak ada kecamatan');
+                              }
+
+                              final validIds = districts
+                                  .map((d) => d.id)
+                                  .toSet();
+                              final validValue =
+                                  validIds.contains(
+                                    selectedDistrictDestinationId,
+                                  )
+                                  ? selectedDistrictDestinationId
+                                  : null;
+
+                              return DropdownButton<int>(
+                                isExpanded: true,
+                                value: validValue,
+                                hint: const Text('Pilih kecamatan'),
+                                items: districts
+                                    .map(
+                                      (d) => DropdownMenuItem<int>(
+                                        value: d.id,
+                                        child: Text(d.name ?? ''),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (newId) {
+                                  setState(() {
+                                    selectedDistrictDestinationId = newId;
+                                  });
+                                },
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
                         ),
                         const SizedBox(height: 12),
                         // Tombol untuk menghitung ongkir
@@ -437,10 +592,18 @@ class _HomePageState extends State<HomePage> {
                                 }
                                 // Panggil API untuk cek ongkir
                                 homeViewModel.checkShipmentCost(
-                                  selectedCityOriginId!.toString(),
-                                  "city",
-                                  selectedCityDestinationId!.toString(),
-                                  "city",
+                                  selectedDistrictOriginId != null
+                                      ? selectedDistrictOriginId.toString()
+                                      : selectedCityOriginId!.toString(),
+                                  selectedDistrictOriginId != null
+                                      ? "subdistrict"
+                                      : "city",
+                                  selectedDistrictDestinationId != null
+                                      ? selectedDistrictDestinationId.toString()
+                                      : selectedCityDestinationId!.toString(),
+                                  selectedDistrictDestinationId != null
+                                      ? "subdistrict"
+                                      : "city",
                                   weight,
                                   selectedCourier,
                                 );
@@ -515,9 +678,13 @@ class _HomePageState extends State<HomePage> {
                             itemCount:
                                 vm.costList.data?.length ??
                                 0, // Jumlah item berdasarkan data ongkir
-                            itemBuilder: (context, index) => CardCost(
-                              vm.costList.data!.elementAt(index),
-                            ), // Gunakan CardCost untuk setiap item
+                            itemBuilder: (context, index) {
+                              final cost = vm.costList.data!.elementAt(index);
+                              return CardCost(
+                                cost,
+                                onTap: () => _showCostDetail(context, cost),
+                              );
+                            }, // Gunakan CardCost untuk setiap item
                           );
                         default:
                           return const Padding(

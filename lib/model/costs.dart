@@ -5,7 +5,8 @@ class Costs extends Equatable {
   final String? code;
   final String? service;
   final String? description;
-  final int? cost;
+  final String? currency;
+  final double? cost;
   final String? etd;
 
   const Costs({
@@ -13,6 +14,7 @@ class Costs extends Equatable {
     this.code,
     this.service,
     this.description,
+    this.currency,
     this.cost,
     this.etd,
   });
@@ -22,7 +24,8 @@ class Costs extends Equatable {
     code: json['code'] as String?,
     service: json['service'] as String?,
     description: json['description'] as String?,
-    cost: json['cost'] as int?,
+    currency: json['currency'] as String?,
+    cost: (json['cost'] as num?)?.toDouble(),
     etd: json['etd'] as String?,
   );
 
@@ -31,12 +34,13 @@ class Costs extends Equatable {
     'code': code,
     'service': service,
     'description': description,
+    'currency': currency,
     'cost': cost,
     'etd': etd,
   };
 
   @override
   List<Object?> get props {
-    return [name, code, service, description, cost, etd];
+    return [name, code, service, description, currency, cost, etd];
   }
 }
