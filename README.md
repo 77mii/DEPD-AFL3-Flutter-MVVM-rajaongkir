@@ -3,7 +3,7 @@
 > flutter run -d chrome --web-browser-flag="--disable-web-security" --web-browser-flag="--user-data-dir=/tmp/chrome-dev"
 
 ---
-# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 # DEPD-AFL3-Flutter-MVVM-rajaongkir
 
